@@ -1,0 +1,14 @@
+apiVersion: v2
+version: 0.0.1
+appVersion: "0.0.1"
+name: openbao-authly-dev
+description: Openbao installation used in Authly development
+type: application
+
+annotations:
+  artifacthub.io/category: security
+  artifacthub.io/prerelease: "true"
+
+home: "https://github.com/protojour/pops-util"
+sources:
+  - "https://github.com/protojour/pops-util/helm/openbao-authly-dev"
