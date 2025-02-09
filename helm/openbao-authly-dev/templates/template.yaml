@@ -247,7 +247,7 @@ spec:
                       kubernetes_host=https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT \
                     && bao write auth/kubernetes/role/authly \
                       bound_service_account_names=authly \
-                      bound_service_account_namespaces={{ .Release.Namespace }} \
+                      bound_service_account_namespaces=* \
                       policies=authly \
                       ttl=24h",
                   ]
