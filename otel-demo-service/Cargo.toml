@@ -1,0 +1,22 @@
+[package]
+name = "otel-demo-service"
+version = "0.0.1"
+edition = "2024"
+publish = false
+rust-version = "1.85"
+
+[dependencies]
+anyhow = "1"
+opentelemetry = "0.28"
+opentelemetry_sdk = { version = "0.28", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.28", default-features = false, features = [
+    "grpc-tonic",
+    "metrics",
+    "trace",
+] }
+rand = "0.9"
+tokio = { version = "1", features = ["full"] }
+tokio-util = "0.7"
+tracing = "0.1"
+tracing-opentelemetry = "0.29"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
