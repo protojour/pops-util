@@ -1,7 +1,8 @@
-use std::{env, time::Duration};
+use std::{env, ffi::OsStr, time::Duration};
 
+use http::Uri;
 use opentelemetry::{KeyValue, global, trace::TracerProvider as _};
-use opentelemetry_otlp::OTEL_EXPORTER_OTLP_ENDPOINT;
+use opentelemetry_otlp::{OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_METRICS_ENDPOINT};
 use opentelemetry_sdk::{
     Resource, metrics::SdkMeterProvider, propagation::TraceContextPropagator,
     trace::SdkTracerProvider,
@@ -45,11 +46,11 @@ fn init() {
 
     opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
 
-    if env::var(OTEL_EXPORTER_OTLP_ENDPOINT).is_ok() {
-        let otel_resource = Resource::builder()
-            .with_service_name("otel-test-service")
-            .build();
+    let otel_resource = Resource::builder()
+        .with_service_name("otel-demo-service")
+        .build();
 
+    if let Ok(_uri) = uri_env(OTEL_EXPORTER_OTLP_ENDPOINT) {
         let trace_provider = SdkTracerProvider::builder()
             .with_resource(otel_resource.clone())
             .with_batch_exporter(
@@ -66,20 +67,27 @@ fn init() {
         let tracer = trace_provider.tracer("tracing-otel-subscriber");
 
         tracing_layer.with(OpenTelemetryLayer::new(tracer)).init();
-
-        // metrics
-        let meter_provider = SdkMeterProvider::builder()
-            .with_resource(otel_resource)
-            .with_periodic_exporter(
-                opentelemetry_otlp::MetricExporter::builder()
-                    .with_tonic()
-                    .build()
-                    .unwrap(),
-            )
-            .build();
-
-        opentelemetry::global::set_meter_provider(meter_provider);
     } else {
         tracing_layer.init();
     }
+
+    if let Ok(uri) = uri_env(OTEL_EXPORTER_OTLP_METRICS_ENDPOINT) {
+        let meter_provider = SdkMeterProvider::builder()
+            .with_resource(otel_resource)
+            .with_periodic_exporter({
+                let builder = opentelemetry_otlp::MetricExporter::builder();
+                if uri.port_u16() == Some(4317) {
+                    builder.with_tonic().build().unwrap()
+                } else {
+                    builder.with_http().build().unwrap()
+                }
+            })
+            .build();
+
+        opentelemetry::global::set_meter_provider(meter_provider);
+    }
+}
+
+fn uri_env(key: impl AsRef<OsStr>) -> Result<Uri, anyhow::Error> {
+    Ok(env::var(key)?.parse()?)
 }

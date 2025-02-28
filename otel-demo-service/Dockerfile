@@ -20,7 +20,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN --mount=type=ssh cargo chef cook ${CARGO_FLAGS} --target x86_64-unknown-linux-musl --recipe-path recipe.json
 # Build application:
 COPY . .
-RUN cargo build -p otel-test-service ${CARGO_FLAGS} --target x86_64-unknown-linux-musl
+RUN cargo build -p otel-demo-service ${CARGO_FLAGS} --target x86_64-unknown-linux-musl
 
 FROM cross AS builder_arm64
 ARG CARGO_FLAGS
@@ -29,7 +29,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN --mount=type=ssh cargo chef cook ${CARGO_FLAGS} --target aarch64-unknown-linux-musl --recipe-path recipe.json
 # Build application:
 COPY . .
-RUN cargo build -p otel-test-service ${CARGO_FLAGS} --target x86_64-unknown-linux-musl
+RUN cargo build -p otel-demo-service ${CARGO_FLAGS} --target x86_64-unknown-linux-musl
 
 
 FROM builder_${TARGETARCH} AS builder
@@ -41,12 +41,12 @@ COPY --from=builder /etc/passwd /etc/passwd
 
 FROM dist_base AS dist_amd64
 ARG RUST_PROFILE
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/${RUST_PROFILE}/otel-test-service /otel-test-service
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/${RUST_PROFILE}/otel-demo-service /otel-demo-service
 
 FROM dist_base AS dist_arm64
 ARG RUST_PROFILE
-COPY --from=builder /app/target/aarch64-unknown-linux-musl/${RUST_PROFILE}/otel-test-service /otel-test-service
+COPY --from=builder /app/target/aarch64-unknown-linux-musl/${RUST_PROFILE}/otel-demo-service /otel-demo-service
 
 FROM dist_${TARGETARCH}
 ARG TARGETARCH
-ENTRYPOINT ["/otel-test-service"]
+ENTRYPOINT ["/otel-demo-service"]

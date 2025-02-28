@@ -7,13 +7,10 @@ rust-version = "1.85"
 
 [dependencies]
 anyhow = "1"
+http = "1"
 opentelemetry = "0.28"
 opentelemetry_sdk = { version = "0.28", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.28", default-features = false, features = [
-    "grpc-tonic",
-    "metrics",
-    "trace",
-] }
+opentelemetry-otlp = { version = "0.28", features = ["grpc-tonic"] }
 rand = "0.9"
 tokio = { version = "1", features = ["full"] }
 tokio-util = "0.7"

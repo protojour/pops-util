@@ -1,0 +1,22 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    command:
+    - --web.enable-otlp-receiver
+    - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+    - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
+
+  otel-demo-service:
+    image: protojour/otel-demo-service:dev
+    depends_on:
+    - prometheus
+    environment:
+      # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: http://prometheus:9090/api/v1/otlp/v1/metrics
+
+volumes:
+  prom_data:
